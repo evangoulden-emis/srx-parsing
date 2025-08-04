@@ -1,12 +1,12 @@
 import re
 import argparse
+import csv
 from collections import defaultdict
 
 def parse_syslog_summary(file_path, target_ip):
     sent_summary = defaultdict(set)
     received_summary = defaultdict(set)
 
-    # Regex to match IPs and ports with flexible formatting
     ip_pattern = re.compile(
         r'source-address="?([\d\.]+)"?\s+source-port="?(\d+)"?\s+'
         r'destination-address="?([\d\.]+)"?\s+destination-port="?(\d+)"?'
@@ -32,31 +32,30 @@ def parse_syslog_summary(file_path, target_ip):
 
     return sent_summary, received_summary
 
+def write_summary_to_csv(sent_summary, received_summary, target_ip, output_file='traffic_summary.csv'):
+    with open(output_file, 'w', newline='') as csvfile:
+        fieldnames = ['Peer IP', 'Direction', 'Destination Port']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for peer_ip, ports in sent_summary.items():
+            for port in ports:
+                writer.writerow({'Peer IP': peer_ip, 'Direction': 'Sent', 'Destination Port': port})
+
+        for peer_ip, ports in received_summary.items():
+            for port in ports:
+                writer.writerow({'Peer IP': peer_ip, 'Direction': 'Received', 'Destination Port': port})
+
+    print(f"✅ Traffic summary written to {output_file}")
+
 def main():
-    parser = argparse.ArgumentParser(description='Summarize Juniper SRX syslog traffic for a specific IP address.')
+    parser = argparse.ArgumentParser(description='Summarize Juniper SRX syslog traffic for a specific IP address and export to CSV.')
     parser.add_argument('file', help='Path to the syslog file')
     parser.add_argument('ip', help='Target IP address to summarize')
     args = parser.parse_args()
 
     sent_summary, received_summary = parse_syslog_summary(args.file, args.ip)
-
-    print(f"\n📊 Traffic Summary for IP: {args.ip}\n")
-
-    if sent_summary:
-        print("📤 Sent Traffic:")
-        for peer_ip, ports in sorted(sent_summary.items()):
-            ports_list = ', '.join(sorted(ports))
-            print(f"Sent to {peer_ip} on destination ports: {ports_list}")
-    else:
-        print("No sent traffic found.")
-
-    if received_summary:
-        print("\n📥 Received Traffic:")
-        for peer_ip, ports in sorted(received_summary.items()):
-            ports_list = ', '.join(sorted(ports))
-            print(f"Received from {peer_ip} on destination ports: {ports_list}")
-    else:
-        print("\nNo received traffic found.")
+    write_summary_to_csv(sent_summary, received_summary, args.ip)
 
 if __name__ == '__main__':
     main()
