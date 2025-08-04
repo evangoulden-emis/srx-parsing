@@ -3,25 +3,30 @@ import argparse
 
 def parse_syslog(file_path, target_ip):
     flows = set()
+
+    # Flexible regex to match quoted or unquoted values with variable spacing
     ip_pattern = re.compile(
-        r'source-address="(?P<src_ip>[^"]+)" source-port="(?P<src_port>\\d+)" '
-        r'destination-address="(?P<dst_ip>[^"]+)" destination-port="(?P<dst_port>\\d+)"[^"]*'
-        r'protocol-id="(?P<proto_id>\\d+)"'
+        r'source-address="?([\d\.]+)"?\s+source-port="?(\d+)"?\s+'
+        r'destination-address="?([\d\.]+)"?\s+destination-port="?(\d+)"?.*?'
+        r'protocol-id="?(\d+)"?'
     )
 
-    with open(file_path, 'r') as f:
-        for line in f:
-            match = ip_pattern.search(line)
-            if match:
-                src_ip = match.group('src_ip')
-                src_port = match.group('src_port')
-                dst_ip = match.group('dst_ip')
-                dst_port = match.group('dst_port')
-                proto_id = match.group('proto_id')
+    try:
+        with open(file_path, 'r') as f:
+            for line in f:
+                match = ip_pattern.search(line)
+                if match:
+                    src_ip, src_port, dst_ip, dst_port, proto_id = match.groups()
 
-                if target_ip in [src_ip, dst_ip]:
-                    protocol = 'TCP' if proto_id == '6' else 'UDP' if proto_id == '17' else f'ID-{proto_id}'
-                    flows.add((src_ip, src_port, dst_ip, dst_port, protocol))
+                    if target_ip in [src_ip, dst_ip]:
+                        protocol = 'TCP' if proto_id == '6' else 'UDP' if proto_id == '17' else f'ID-{proto_id}'
+                        flows.add((src_ip, src_port, dst_ip, dst_port, protocol))
+    except PermissionError:
+        print(f"❌ Permission denied when trying to read: {file_path}")
+        return []
+    except FileNotFoundError:
+        print(f"❌ File not found: {file_path}")
+        return []
 
     return flows
 
