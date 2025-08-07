@@ -1,0 +1,16 @@
+192.168.9.115
+192.168.9.130
+192.168.9.141
+192.168.9.234
+192.168.9.235
+192.168.9.236
+192.168.9.237
+192.168.9.241
+192.168.9.249
+192.168.9.250
+192.168.9.33
+192.168.9.85
+
+UK-RPMA04DC-001	RX Domain - DC	Reading DC	David Watson	Group IT Systems	Active	R1	192.168.9.223	Windows Server 2019
+"LiveDB RDRXMLTDB01"	LIVE DB (MultePos Live SQL Express)	Reading DC	Oliver Somers, Robert Crain	"Richard Slade,Pete Sturgess"	Active	R1	192.168.9.80	Windows Server 2016
+"MLTDevServer RDRXMLTDB02"	EMIS - TEST DB	Reading DC	Oliver Somers, Robert Crain	"Richard Slade, Pete Sturgess"	Active	R1	192.168.9.81	Windows Server 2019
