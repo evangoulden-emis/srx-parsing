@@ -1,0 +1,7 @@
+Peer IP,Direction,Destination Port
+192.168.4.67,Sent,62565
+192.168.4.67,Sent,62549
+192.168.4.67,Sent,62564
+192.168.4.67,Sent,62563
+192.168.4.105,Sent,8530
+192.168.4.67,Received,445
